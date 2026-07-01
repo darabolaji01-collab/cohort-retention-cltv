@@ -1,0 +1,35 @@
+# ============================================================
+#  .gitignore  —  Project 2: Cohort Retention & CLTV Analysis
+#  Purpose: NEVER let raw data or secrets get uploaded to GitHub.
+#  (Infotact rule: pushing raw .csv/.xlsx/.sqlite = immediate failure.)
+# ============================================================
+
+# --- Raw / local data (keep data OUT of GitHub) ---
+data/
+*.csv
+*.xlsx
+*.xls
+*.sqlite
+*.db
+
+# --- Secrets & credentials ---
+.env
+*.key
+credentials.json
+
+# --- Python junk ---
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# --- Notebook checkpoints & OS junk ---
+.DS_Store
+Thumbs.db
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+
+# NOTE: We DO want to track files inside outputs/ (charts) and
+# reports/ (write-ups) later. Those are not ignored here.
