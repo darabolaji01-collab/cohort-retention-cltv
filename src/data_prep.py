@@ -106,9 +106,35 @@ def load_clean_dataset(data_dir: str = DATA_DIR) -> pd.DataFrame:
     return clean_dataset(load_combined_dataset(data_dir))
 
 
+def add_cohort_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Add the three cohort columns used for retention analysis.
+
+    - transaction_month : the month a purchase happened (pandas Period 'YYYY-MM')
+    - cohort_month      : each customer's FIRST purchase month
+    - cohort_index      : whole months since the customer's first purchase (0, 1, 2, ...)
+    """
+    out = df.copy()
+    out["transaction_month"] = out["invoice_datetime"].dt.to_period("M")
+    out["cohort_month"] = out.groupby("customer_id")["transaction_month"].transform("min")
+    out["cohort_index"] = (
+        (out["transaction_month"].dt.year  - out["cohort_month"].dt.year) * 12
+        + (out["transaction_month"].dt.month - out["cohort_month"].dt.month)
+    )
+    return out
+
+
+def load_cohort_dataset(data_dir: str = DATA_DIR) -> pd.DataFrame:
+    """Convenience: load + combine + clean + add cohort columns in one call."""
+    return add_cohort_columns(load_clean_dataset(data_dir))
+
+
+
 if __name__ == "__main__":
-    df = load_clean_dataset()
+    df = load_cohort_dataset()
     print("Clean rows        :", f"{len(df):,}")
     print("Unique customers  :", f"{df['customer_id'].nunique():,}")
     print("Date range        :", df["invoice_datetime"].min(), "->", df["invoice_datetime"].max())
     print("Total revenue     : £", f"{df['line_total'].sum():,.2f}")
+    print("cohort_index range:", df["cohort_index"].min(), "->", df["cohort_index"].max())
+    print("Cohorts (new customers per first-purchase month):")
+    print(df.groupby("cohort_month")["customer_id"].nunique().to_string())
